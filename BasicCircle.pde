@@ -47,15 +47,17 @@ class BasicCircle {
     /// first sanitize URL
     String encodedurl = tweetData;
     try {
-        String cleanedTweet = tweetData;
-        cleanedTweet = cleanedTweet.replaceAll("\"", "");
+        String cleanedTweet = tweetData.toString();
+        cleanedTweet = cleanedTweet.replace("\"", "");
         cleanedTweet = cleanedTweet.replaceAll("\\s+", " ");
-        cleanedTweet = cleanedTweet.replaceAll(">", "");
-        // cleanedTweet = cleanedTweet.replaceAll("%", "");
-        /// cleanedTweet = encodedurl.replaceAll("/", "");
-        cleanedTweet = cleanedTweet.replaceAll("@", "");
-        cleanedTweet = cleanedTweet.replaceAll("#", "%23"); //// replace all hashtags with unicode
-        cleanedTweet = encodedurl.replaceAll("\n", "");
+        cleanedTweet = cleanedTweet.replace(">", "");
+        cleanedTweet = cleanedTweet.replace("%", "");
+        cleanedTweet = cleanedTweet.replace("|", "");
+        cleanedTweet = cleanedTweet.replace(":", "");
+        cleanedTweet = cleanedTweet.replace("@", "");
+        cleanedTweet = cleanedTweet.replace("#", ""); //// replace all hashtags with unicode %23
+        
+        cleanedTweet = encodedurl.replace("\n", "");
         
         /// encodedurl = encodedurl.replaceAll("\\s+", "/");
         /// encodedurl = encodedurl.replaceAll("\\s+", "?");
@@ -69,14 +71,18 @@ class BasicCircle {
         
         GetRequest get = new GetRequest(encodedurl);
         get.send();
-        println("Sentiment Content: " + get.getContent());
+        /// println("Sentiment Content: " + get.getContent());
         /// now let's parse the json
-        json = loadJSONObject(get.getContent());
-      
-        int sentiment = json.getInt("label");
+        try{
+          json = loadJSONObject(get.getContent());
+          /// String sentiment = json.getString("label");
+          println("I FEEL THIS WAY: ");
+          println(json.toString());
+        } catch (Exception e){
+          println("can't parse json: " + e);
+          
+        }
 
-      
-        println("I FEEL THIS WAY: " + sentiment);
         
         /// println("Get Reponse Content-Length Header: " + get.getHeader("Content-Length"));
     
