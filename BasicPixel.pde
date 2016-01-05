@@ -2,7 +2,7 @@
 //// http
 import http.requests.*;
 
-class BasicCircle {
+class BasicPixel {
 
   /// Main Config
   AnimConfig TheConfig;
@@ -36,15 +36,14 @@ class BasicCircle {
   /// json data
   processing.data.JSONObject json;
 
-  BasicCircle(float x, float y, float size) {
+  BasicPixel(float x, float y, float size) {
 
     TheConfig = AnimConfig.getInstance();
     tPos.x = x;
     tPos.y = y;
     tSize = size;
 
-    wander_theta = random(TWO_PI);
-    wander_radius = random(max_wander_radius);
+   
   }
   
   void getSentiment(){
@@ -115,27 +114,6 @@ class BasicCircle {
   
  
   void update() {
-    
-    if(TheConfig.doWrap){
-      checkBoundariesWrap();
-    } else {
-      checkBoundaries();
-    }
-
-    float wander_offset = random(-max_wander_offset, max_wander_offset);
-    wander_theta += wander_offset;
-    
-    if(dirX){
-      tPos.x += cos(wander_theta);
-    } else {
-      tPos.x -= cos(wander_theta);
-    }
-    
-    if(dirY){
-      tPos.y += sin(wander_theta);
-    } else {
-      tPos.y -= sin(wander_theta);
-    }
 
     noStroke();
     fill(tColor);
@@ -145,56 +123,7 @@ class BasicCircle {
     text(theSent, tPos.x, tPos.y, 200, 200);
   }
 
-//// BOUNCE SIDES
- void checkBoundaries() {
-    if (tPos.x > TheConfig.tWidth) {
-       if(dirX == false){
-        dirX = true;
-      } else {
-        dirX = false;
-      }
-    }
-    if (tPos.x < 0) {
-      if(dirX == false){
-        dirX = true;
-      } else {
-        dirX = false;
-      }
-      //tColor = color(255, 0, 0, 165);
-    }
-    if (tPos.y > TheConfig.tHeight) {
-       if(dirY == false){
-        dirY = true;
-      } else {
-        dirY = false;
-      }
-    }
-    if (tPos.y < 0) {
-      if(dirY == false){
-        dirY = true;
-      } else {
-        dirY = false;
-      }
-    }
-  }
 
-//// WRAP SIDES
-  void checkBoundariesWrap() {
-    if (tPos.x > TheConfig.tWidth) {
-      tPos.x = 0; // cos(wander_theta);
-    }
-    if (tPos.y > TheConfig.tHeight) {
-      tPos.y = 0; // sin(wander_theta);
-    }
-    if (tPos.x < 0) {
-      tPos.x = TheConfig.tWidth; // cos(wander_theta);
-    }
-    if (tPos.y < 0) {
-      tPos.y = TheConfig.tHeight; // sin(wander_theta);
-    }
-  }
-
-  //// end class
   
   
   //// URL ENCODING ///////// 

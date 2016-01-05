@@ -1,16 +1,12 @@
 /*//////////////////
-TWITTER SENTIMENT TRACKER
-//////////////////*/
+ TWITTER SENTIMENT TRACKER
+ //////////////////*/
 import twitter4j.conf.*;
 import twitter4j.*;
 import twitter4j.auth.*;
 import twitter4j.api.*;
 import java.util.*; 
-
- 
- 
 import java.io.IOException;
-
 
 //// OATH CREDENTIALS ///////
 String OAuthConsumerKey = "6EV4YHCfQB3xHbLD521ffcvFx";
@@ -40,17 +36,17 @@ AnimConfig TheConfig;
 int tWidth;
 int tHeight;
 
-void setup(){
-  size(800,600,P2D);
-  
-    /// set the width and height in the singleton
+void setup() {
+  size(800, 600, P2D);
+
+  /// set the width and height in the singleton
   /// so we can reference it from the objects 
   /// rather than pass it in
   TheConfig = AnimConfig.getInstance();
   TheConfig.tWidth = width;
   TheConfig.tHeight = height;
 
-  
+
   //// init twitter
   ConfigurationBuilder cb = new ConfigurationBuilder();
   cb.setOAuthConsumerKey(OAuthConsumerKey);
@@ -61,34 +57,34 @@ void setup(){
   TwitterFactory tf = new TwitterFactory(cb.build());
 
   twitter = tf.getInstance();
-  
+
   getNewTweets();
-  
-  
+
+
   /// set up tweet recheck
   thread("refreshTweets");
 }
 
 
-void draw(){
+void draw() {
   //// check tweets, save to an array
   background(0);
   /// rect(0, 0, width, height);
 
   curTweetId = curTweetId + 1;
 
-  try{
-    if (curTweetId >= tweets.size()){
-        curTweetId = 0;
+  try {
+    if (curTweetId >= tweets.size()) {
+      curTweetId = 0;
     }
     /// Status status = tweets.get(curTweetId);
     /// text(status.getText(), random(width), random(height), 300, 200);
     /// println(status.getText());
-      /// draw tweets
+    /// draw tweets
     drawTweets();
-
-  } catch (Exception e){
-      println("error incrementing tweets: " + e);
+  } 
+  catch (Exception e) {
+    println("error incrementing tweets: " + e);
   }
 
 
@@ -103,85 +99,93 @@ void draw(){
 ////////////////////////////////
 ///// drawing ///////////////////
 
-void drawTweets(){
+void drawTweets() {
   for (int i = 0; i<CircleArray.size(); i++) {
     tCirc = CircleArray.get(i);
     tCirc.update();
   }
 }
 
-/// populate array
-void buildTweetCircs(){
+/// populate array of tweet circles
+void buildTweetCircs() {
   /// create all circles, make sure none of them 
+  
+  TheConfig.numTweets = tweets.size();
   /// fall right on a border
   for (int i=0; i< tweets.size(); i++) {
     float zx = random(10, TheConfig.tWidth-10);
     float zy = random(10, TheConfig.tHeight-10);
-    
+
     BasicCircle tCirc = new BasicCircle(zx, zy, spotSize);
     Status status = tweets.get(i);
-     
+    
+    /// look for retweeted_status
+    
+    // println(" ");
+    // println(" ");
+    // println(tweets.get(i).toString());
     tCirc.tweetData = status.getText();
+    //// println("RT STATUS " + status.isRetweet());
+    if(status.isRetweet()){
+      TheConfig.numRTs +=1;
+    }
     /// println(status.getText());
+    /// we change this once we get the sentiment anyway
     tCirc.tColor = color(random(255), random(255), random(255), 135);
     tCirc.getSentiment();
     CircleArray.add(tCirc);
-    /// addCircle(zx, zy, spotSize);
-
-    /// fill(200);
-    /// text(status.getText(), random(width), random(height), 300, 200);
-    /// println(status.getText());
-
   }
+  
+  println("NUMBER TWEETS : " + TheConfig.numTweets);
+  println("RETWEETS: " + TheConfig.numRTs);
 }
 
+/////////////////////////////////////////
+///// HANDLE CIRCLE UPDATES /////////////
+//////////////////////////////////////////
+
 /// do multiple circle instances
-void addCircles(int tNum){
-  
-  for(int i=0; i<tNum; i++){
+void addCircles(int tNum) {
+
+  for (int i=0; i<tNum; i++) {
     float zx = random(0, TheConfig.tWidth);
     float zy = random(0, TheConfig.tHeight);
     addCircle(zx, zy, spotSize);
-    
   }
 }
-void removeCircles(int tNum){
-  
-  for(int i=CircleArray.size(); i>tNum; i--){
+void removeCircles(int tNum) {
+
+  for (int i=CircleArray.size(); i>tNum; i--) {
     deleteCircle();
-    
   }
 }
 
 
 /// add/remove single circles
-void addCircle(float zx, float zy, float tSiz){
+void addCircle(float zx, float zy, float tSiz) {
 
- 
-/*    BasicCircle tCirc = new BasicCircle(zx, zy, tSiz);
-    Status status = tweets.get(i);
-     
-    tCirc.tweetData = status;
-    CircleArray.add(tCirc);
-*/
+
+  /*    BasicCircle tCirc = new BasicCircle(zx, zy, tSiz);
+   Status status = tweets.get(i);
+   
+   tCirc.tweetData = status;
+   CircleArray.add(tCirc);
+   */
 }
 
-void deleteCircle(){
+void deleteCircle() {
   println("Cur num Circs: " + CircleArray.size());
   CircleArray.remove(CircleArray.size() - 1);
-  
 }
-
-
 
 
 ///////////////////////////////////
 ///// TWITTER HANDLING ///////////
 ////////////////////////////////////
-void getNewTweets(){
+void getNewTweets() {
 
-  
-  try{
+
+  try {
     String searchString = searchStr;
     // try to get tweets here
     Query query = new Query(searchString);
@@ -191,28 +195,25 @@ void getNewTweets(){
     //// let's build the circles
     buildTweetCircs();
   }
-  catch (TwitterException te){
-      // deal with the case where we can't get them here
-      println("search error: " + te.getMessage());
+  catch (TwitterException te) {
+    // deal with the case where we can't get them here
+    println("search error: " + te.getMessage());
   }
-
 }
 
 
-void refreshTweets(){
-  
-  
-   while (true)
-    {
-        getNewTweets();
+void refreshTweets() {
 
-        println("Updated Tweets");
 
-        delay(refreshDelay);
-    }
-    
+  while (true)
+  {
+    getNewTweets();
+
+    println("Updated Tweets");
+
+    delay(refreshDelay);
+  }
 }
-void retrieve(){
+void retrieve() {
   //// retrieve value-added tweets?
-  
 }

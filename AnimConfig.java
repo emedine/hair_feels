@@ -6,6 +6,9 @@ public class AnimConfig {
   int tWidth;
   int tHeight;
   
+  int numTweets;
+  int numRTs;
+  
   /// config
   boolean doWrap = true;
     
