@@ -9,7 +9,8 @@ class BasicPixel {
 
   float tX;
   float tY;
-  float tSize;
+  float tSizeW;
+  float tSizeH;
   PVector tPos = new PVector();
   
   color tColor = color(255, 255, 255, 165);
@@ -36,13 +37,13 @@ class BasicPixel {
   /// json data
   processing.data.JSONObject json;
 
-  BasicPixel(float x, float y, float size) {
+  BasicPixel(float x, float y, float sizeW, float sizeH) {
 
     TheConfig = AnimConfig.getInstance();
     tPos.x = x;
     tPos.y = y;
-    tSize = size;
-
+    tSizeW = sizeW;
+    tSizeH = sizeH;
    
   }
   
@@ -94,7 +95,7 @@ class BasicPixel {
             /// calculate a third color based on the mix of pos and neg
             tColor = color(map(negVal,0,1,0,255), map(posVal,0,1,0,255), random(0,255), 217);
           }
-          println(name);
+          /// println(name);
           
         } catch (Exception e){
           println("can't parse json: " + e);
@@ -117,9 +118,10 @@ class BasicPixel {
 
     noStroke();
     fill(tColor);
-    ellipse(tPos.x, tPos.y, tSize, tSize);
+    ellipse(tPos.x, tPos.y, tSizeW, tSizeH);
     
     //// display text
+    fill(0);
     text(theSent, tPos.x, tPos.y, 200, 200);
   }
 
