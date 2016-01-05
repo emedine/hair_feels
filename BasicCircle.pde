@@ -63,6 +63,7 @@ class BasicCircle {
         cleanedTweet = cleanedTweet.replace("#", "");
         cleanedTweet = cleanedTweet.replace("!", "");
         cleanedTweet = cleanedTweet.replace(",", "");
+        cleanedTweet = cleanedTweet.replace("'", "");
         cleanedTweet = cleanedTweet.replace("%", "");
         cleanedTweet = cleanedTweet.replace("/", "");
         /// println("Cleaned: " + cleanedTweet);
@@ -87,15 +88,17 @@ class BasicCircle {
           theSent = name.toString();
           if(theSent.equals("neg")){
             tColor = color(255,0,0,217);
+            TheConfig.numNeg +=1;
           }
           if(theSent.equals("pos")){
             tColor = color(0,255,0,217);
+            TheConfig.numPos +=1;
           }
           if(theSent.equals("neutral")){
             /// calculate a third color based on the mix of pos and neg
             tColor = color(map(negVal,0,1,0,255), map(posVal,0,1,0,255), random(0,255), 217);
           }
-          println(name);
+          println(name );
           
         } catch (Exception e){
           println("can't parse json: " + e);

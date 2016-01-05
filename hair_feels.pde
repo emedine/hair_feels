@@ -29,7 +29,27 @@ ArrayList <BasicPixel> PixelArray = new ArrayList();
 BasicPixel tCirc;
 float spotSize = 25;
 
-int refreshDelay = 30000;
+//// images
+PImage dtHairball;
+
+//// color anims
+color overColor = color(255,0,0); //// overview color
+color baseColor = color(255,255,255); /// color we pulse to
+float curR = 0;
+float curG = 0;
+float curB = 0;
+color curColor = color(curR,curG,curB); /// current color
+//// pulse params
+boolean pulseIn = true;
+float pulseAlpha = 0;/// alpha for the pulse mask
+float pulseSpeed = 0; //// smaller number == faster pulse
+
+/// TIMING FUNCTIONS
+int refreshDelay = 25000;
+float time;
+float wait = 35000;
+
+boolean tick = false;
 
 /// Main Config
 AnimConfig TheConfig;
@@ -38,8 +58,13 @@ int tHeight;
 int numRows;
 int numCols;
 
+/// retweet threshold
+int rtThresh = 0; //// number of retweets in current pool of tweets
+boolean isPos = false; /// baseline sentiment for current pool of tweets
+
 void setup() {
   size(800, 800, P2D);
+  frameRate(60);
 
   /// set the width and height in the singleton
   /// so we can reference it from the objects 
@@ -62,19 +87,24 @@ void setup() {
 
   getNewTweets();
 
-
+  dtHairball = loadImage("data/hairballs_trump_pure.png");
   /// set up tweet recheck
-  thread("refreshTweets");
+  /// thread("refreshTweets");
 }
 
 
 void draw() {
   //// check tweets, save to an array
-  background(0);
-  /// rect(0, 0, width, height);
-
-  curTweetId = curTweetId + 1;
-
+  if(millis() - time >= wait){
+    getNewTweets();
+    tick = !tick;//if it is, do something
+    time = millis();//also update the stored time
+  }
+  //// check background color
+  checkBGColor();
+  background(curColor);
+  
+  
   try {
     if (curTweetId >= tweets.size()) {
       curTweetId = 0;
@@ -88,6 +118,36 @@ void draw() {
   catch (Exception e) {
     println("error incrementing tweets: " + e);
   }
+  
+  // filter(BLUR, 6);
+  
+  /// pulse in box blocker
+  fill(baseColor, pulseAlpha);
+  rect(0, 0, width, height);
+  float rtAdj =  map(pulseSpeed, 0,15,117,0); 
+  if(pulseIn == true && pulseAlpha < 255){
+    pulseAlpha += rtAdj; 
+    
+  } 
+  if(pulseIn == true && pulseAlpha >= 255){
+    pulseIn = false;
+    
+  }
+  if(pulseIn == false && pulseAlpha > -575){ /// make alpha fade out really low so we can see the color longer
+    pulseAlpha -= rtAdj; 
+    
+  }
+  if(pulseIn == false && pulseAlpha <= -575){
+    pulseIn = true;
+    
+  }
+  //// println("Pulse fade: " + pulseAlpha + " pulse speed " + pulseSpeed + " rtAdj: " + rtAdj);
+  //// println(frameRate);
+  curTweetId = curTweetId + 1;
+
+  /// draw image
+  imageMode(CORNERS);
+  image(dtHairball, 0,0, width,height);
 
 
   //// delay(250);
@@ -98,8 +158,50 @@ void draw() {
   /// send to google storage
 }
 
+void checkBGColor(){
+  
+  /// get our high and low colors
+  /// from our neg and pos ratio
+
+  if(TheConfig.numPos >= TheConfig.numNeg){
+    isPos = true;
+    /// normalize to green
+    overColor = color(0,255,0);
+    if(curR > red(overColor)){
+      curR -=11;
+    }
+    if(curG < green(overColor)){
+      curG +=11;
+    }
+    
+    if(curB > blue(overColor)){
+      curB -=11;
+    }
+ 
+  } else {
+    isPos = false;
+    overColor = color(255,0,0);
+    /// normalize to red
+    if(curR < red(overColor)){
+      curR +=11;
+    }
+    if(curG > green(overColor)){
+      curG -=11;
+    }
+    
+    if(curB > blue(overColor)){
+      curB -=11;
+    }
+    
+  }
+  curColor = color(curR,curG,curB);
+
+  
+}
+
 ////////////////////////////////
 ///// drawing ///////////////////
+///////////////////////////////////
 
 void drawTweets() {
   for (int i = 0; i<PixelArray.size(); i++) {
@@ -112,19 +214,13 @@ void drawTweets() {
 /// CREATE TWEET CIRCLES ////////////
 /////////////////////////////////////////////////
 void buildTweetCircs() {
-  /// create all circles
-  /// figure out how big they have
-  /// to be to fit from edge to edge
+  /// reset the display values for each 
+  /// twitter pool
   TheConfig.numTweets = tweets.size();
-  float tArea = TheConfig.tWidth * TheConfig.tHeight;
-
-
-  //// this is maybe gonna work?
-  //// Therefore, given circles of radius rr, the number of circles which fit in the square should be the greatest integer less than 112√L2r2
-
-  // float possRad = (3.14/(TheConfig.tWidth*TheConfig.tWidth))/sqrt(12);
-  /// float tightRad = 6.2986547; // 3.14 * (possRad*possRad);
-  /// println("THIS IS THE POSSIBLE RADIUS: " + possRad + " " + tightRad);
+  TheConfig.numPos = 0;
+  TheConfig.numNeg = 0;
+  TheConfig.numRTs = 0;
+  
   //// let's calculate how many rows and cols
   //// there's always 15 so let's fudge that
   // numRows = int(sqrt(tweets.size()));
@@ -162,16 +258,20 @@ void buildTweetCircs() {
         /// println(status.getText());
         /// we change this once we get the sentiment anyway
         tCirc.tColor = color(random(255), random(255), random(255), 135);
-        tCirc.getSentiment();
+        //// tCirc.getSentiment();
         PixelArray.add(tCirc);
-        println("cur count: " + tCount + " " + TheConfig.numTweets);
         tCount+=1;
       }
     }
   }
-
+  /// get our pulse rate from
+  /// our retweet ratio
+  pulseSpeed = TheConfig.numTweets - TheConfig.numRTs; //// smaller number == faster pulse
   println("NUMBER TWEETS : " + TheConfig.numTweets);
   println("RETWEETS: " + TheConfig.numRTs);
+  println("IS POSITIVE: " +  isPos + " pos: " + TheConfig.numPos + " neg: " + TheConfig.numNeg);
+  
+  println("PULSE SPEED: " +  pulseSpeed + " twts: " +  TheConfig.numTweets + " rts: " + TheConfig.numRTs);
 }
 
 /////////////////////////////////////////
@@ -233,21 +333,4 @@ void getNewTweets() {
     // deal with the case where we can't get them here
     println("search error: " + te.getMessage());
   }
-}
-
-
-void refreshTweets() {
-
-
-  while (true)
-  {
-    getNewTweets();
-
-    println("Updated Tweets");
-
-    delay(refreshDelay);
-  }
-}
-void retrieve() {
-  //// retrieve value-added tweets?
 }

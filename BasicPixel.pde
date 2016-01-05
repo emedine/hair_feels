@@ -64,6 +64,9 @@ class BasicPixel {
         cleanedTweet = cleanedTweet.replace("!", "");
         cleanedTweet = cleanedTweet.replace(",", "");
         cleanedTweet = cleanedTweet.replace("%", "");
+        cleanedTweet = cleanedTweet.replace("?", "");
+        cleanedTweet = cleanedTweet.replace("}", "");
+        cleanedTweet = cleanedTweet.replace("{", "");
         cleanedTweet = cleanedTweet.replace("/", "");
         /// println("Cleaned: " + cleanedTweet);
         
@@ -75,7 +78,7 @@ class BasicPixel {
 
         GetRequest get = new GetRequest(encodedurl);
         get.send();
-        /// println("Sentiment Content: " + get.getContent());
+        println("Sentiment Content: " + get.getContent());
         /// now let's parse the json
         try{
           String jsondata = get.getContent();
@@ -87,9 +90,11 @@ class BasicPixel {
           theSent = name.toString();
           if(theSent.equals("neg")){
             tColor = color(255,0,0,217);
+            TheConfig.numNeg +=1;
           }
           if(theSent.equals("pos")){
             tColor = color(0,255,0,217);
+            TheConfig.numPos +=1;
           }
           if(theSent.equals("neutral")){
             /// calculate a third color based on the mix of pos and neg
