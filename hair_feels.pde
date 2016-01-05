@@ -24,9 +24,9 @@ Twitter twitter;
 List<Status> tweets;
 
 //// art objects
-ArrayList <BasicCircle> CircleArray = new ArrayList();
+ArrayList <BasicPixel> PixelArray = new ArrayList();
 /// circle objects
-BasicCircle tCirc;
+BasicPixel tCirc;
 float spotSize = 25;
 
 int refreshDelay = 30000;
@@ -35,9 +35,11 @@ int refreshDelay = 30000;
 AnimConfig TheConfig;
 int tWidth;
 int tHeight;
+int numRows;
+int numCols;
 
 void setup() {
-  size(800, 600, P2D);
+  size(800, 800, P2D);
 
   /// set the width and height in the singleton
   /// so we can reference it from the objects 
@@ -100,42 +102,74 @@ void draw() {
 ///// drawing ///////////////////
 
 void drawTweets() {
-  for (int i = 0; i<CircleArray.size(); i++) {
-    tCirc = CircleArray.get(i);
+  for (int i = 0; i<PixelArray.size(); i++) {
+    tCirc = PixelArray.get(i);
     tCirc.update();
   }
 }
 
-/// populate array of tweet circles
+///////////////////////////////////////////
+/// CREATE TWEET CIRCLES ////////////
+/////////////////////////////////////////////////
 void buildTweetCircs() {
-  /// create all circles, make sure none of them 
-  
+  /// create all circles
+  /// figure out how big they have
+  /// to be to fit from edge to edge
   TheConfig.numTweets = tweets.size();
-  /// fall right on a border
-  for (int i=0; i< tweets.size(); i++) {
-    float zx = random(10, TheConfig.tWidth-10);
-    float zy = random(10, TheConfig.tHeight-10);
+  float tArea = TheConfig.tWidth * TheConfig.tHeight;
 
-    BasicCircle tCirc = new BasicCircle(zx, zy, spotSize);
-    Status status = tweets.get(i);
-    
-    /// look for retweeted_status
-    
-    // println(" ");
-    // println(" ");
-    // println(tweets.get(i).toString());
-    tCirc.tweetData = status.getText();
-    //// println("RT STATUS " + status.isRetweet());
-    if(status.isRetweet()){
-      TheConfig.numRTs +=1;
+
+  //// this is maybe gonna work?
+  //// Therefore, given circles of radius rr, the number of circles which fit in the square should be the greatest integer less than 112√L2r2
+
+  // float possRad = (3.14/(TheConfig.tWidth*TheConfig.tWidth))/sqrt(12);
+  /// float tightRad = 6.2986547; // 3.14 * (possRad*possRad);
+  /// println("THIS IS THE POSSIBLE RADIUS: " + possRad + " " + tightRad);
+  //// let's calculate how many rows and cols
+  //// there's always 15 so let's fudge that
+  // numRows = int(sqrt(tweets.size()));
+  // numCols = int(sqrt(tweets.size()));
+  numRows = int(tweets.size()/3.5);
+  numCols = int(tweets.size()/3.5);
+  float side = (TheConfig.tWidth * TheConfig.tHeight)/tweets.size();
+
+  /// int numRows = int(TheConfig.tWidth/tightRad);
+  ///  int numCols = int(TheConfig.tHeight/tightRad);
+  float circWidth = TheConfig.tWidth/numCols;
+  float circHeight = TheConfig.tHeight/numRows;
+ 
+  /// println("width: " + circWidth + " " + circHeight);
+  int tCount = 0;
+  /// fall right on a border
+  for (int i=0; i<numRows; i++) {
+    for (int j=0; j<numCols; j++) {
+      float newx = i * circWidth + circWidth/2;
+      float newy = j * circHeight + circHeight/2;
+      BasicPixel tCirc = new BasicPixel(newx, newy, circWidth, circHeight);
+      if (tCount < TheConfig.numTweets) {
+        Status status = tweets.get(tCount);
+
+        /// look for retweeted_status
+
+        // println(" ");
+        // println(" ");
+        // println(tweets.get(i).toString());
+        tCirc.tweetData = status.getText();
+        //// println("RT STATUS " + status.isRetweet());
+        if (status.isRetweet()) {
+          TheConfig.numRTs +=1;
+        }
+        /// println(status.getText());
+        /// we change this once we get the sentiment anyway
+        tCirc.tColor = color(random(255), random(255), random(255), 135);
+        tCirc.getSentiment();
+        PixelArray.add(tCirc);
+        println("cur count: " + tCount + " " + TheConfig.numTweets);
+        tCount+=1;
+      }
     }
-    /// println(status.getText());
-    /// we change this once we get the sentiment anyway
-    tCirc.tColor = color(random(255), random(255), random(255), 135);
-    tCirc.getSentiment();
-    CircleArray.add(tCirc);
   }
-  
+
   println("NUMBER TWEETS : " + TheConfig.numTweets);
   println("RETWEETS: " + TheConfig.numRTs);
 }
@@ -155,7 +189,7 @@ void addCircles(int tNum) {
 }
 void removeCircles(int tNum) {
 
-  for (int i=CircleArray.size(); i>tNum; i--) {
+  for (int i=PixelArray.size(); i>tNum; i--) {
     deleteCircle();
   }
 }
@@ -165,17 +199,17 @@ void removeCircles(int tNum) {
 void addCircle(float zx, float zy, float tSiz) {
 
 
-  /*    BasicCircle tCirc = new BasicCircle(zx, zy, tSiz);
+  /*    BasicPixel tCirc = new BasicPixel(zx, zy, tSiz);
    Status status = tweets.get(i);
    
    tCirc.tweetData = status;
-   CircleArray.add(tCirc);
+   PixelArray.add(tCirc);
    */
 }
 
 void deleteCircle() {
-  println("Cur num Circs: " + CircleArray.size());
-  CircleArray.remove(CircleArray.size() - 1);
+  println("Cur num Circs: " + PixelArray.size());
+  PixelArray.remove(PixelArray.size() - 1);
 }
 
 
