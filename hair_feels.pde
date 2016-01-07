@@ -67,7 +67,7 @@ int tHeight;
 int numRows;
 int numCols;
 
-int candidateID = 0; /// 0: trump, 1: bernie, 2: hillary
+int candidateID = 2; /// 0: trump, 1: bernie, 2: hillary
 
 /// retweet threshold
 int rtThresh = 0; //// number of retweets in current pool of tweets
@@ -214,7 +214,9 @@ void drawVisibleTweet(){
    BasicPixel tPx = PixelArray.get(curTweetId);
    fill(255, 255,255, twtTxtAlpha);
    textAlign(CENTER);
+
    textSize(18);
+   textLeading(16);
    text(tPx.tweetData, 20, TheConfig.tHeight - 100, TheConfig.tWidth-60, TheConfig.tHeight);
 
   
@@ -340,11 +342,12 @@ void buildTweetCircs() {
   /// reset the pulse timer
   /// since no one is getting less than 6 RTs
   /// adjust pattern upward
-  int btNum = TheConfig.numRTs;
-  if(TheConfig.numRTs >= 6){
-    btNum = 6;
+  // TheConfig.numRTs = 15;
+  int btNum = 0;// TheConfig.numRTs;
+  if(TheConfig.numRTs <= 7){
+    btNum = 7;
   }
-  pulseWait = map(6, 0, 15, plseThreshHigh, plseThreshLw); //// smaller RT == faster pulse
+  pulseWait = map(TheConfig.numRTs, btNum, 15, plseThreshHigh, plseThreshLw); //// smaller RT == faster pulse
   pulseTime = millis();//also update the stored time
 }
 
