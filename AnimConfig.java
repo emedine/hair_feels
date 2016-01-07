@@ -11,6 +11,10 @@ public class AnimConfig {
   int numPos = 0;
   int numNeg = 0;
   
+  String searchTerm = "";
+  int searchId;
+  String imgPath;
+  
   /// config
   boolean doWrap = true;
     

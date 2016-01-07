@@ -62,6 +62,8 @@ class BasicPixel {
         cleanedTweet = cleanedTweet.replace("@", "");
         cleanedTweet = cleanedTweet.replace("#", "");
         cleanedTweet = cleanedTweet.replace("!", "");
+        cleanedTweet = cleanedTweet.replace(">", "");
+        cleanedTweet = cleanedTweet.replace("<", "");
         cleanedTweet = cleanedTweet.replace(",", "");
         cleanedTweet = cleanedTweet.replace("%", "");
         cleanedTweet = cleanedTweet.replace("?", "");
@@ -106,6 +108,12 @@ class BasicPixel {
           println("can't parse json: " + e);
           
         }
+        /// try multisentiment just to see the response
+        /// http://54.83.74.67/tweetery/?tweet=[urlencoded tweet]&candidate=[urlencoded candidate name]&verbose=0
+        String multiSentUrl = "http://54.83.74.67/tweetery/?tweet=" + cleanedTweet + "&candidate=" + TheConfig.searchTerm + "&verbose=0";
+        multiSentUrl = URLEncode(multiSentUrl);
+        /// checkMultiSentiment(multiSentUrl);
+        
 
         
         /// println("Get Reponse Content-Length Header: " + get.getHeader("Content-Length"));
@@ -116,6 +124,52 @@ class BasicPixel {
 
    
 
+  }
+  
+  
+  //// check multi sentiment
+  void checkMultiSentiment(String str){
+    GetRequest get = new GetRequest(str);   
+    try{
+       println("checking multisentiment: " + str);
+      get.send();
+      /// println("multisentiment result: " + get.getContent());
+    } catch (Exception e){
+      println("error with multisentiment: " + e);
+      
+    }
+   
+    /// now let's parse the json
+    
+    /*
+    try{
+      String jsondata = get.getContent();
+      processing.data.JSONObject json = processing.data.JSONObject.parse(jsondata);
+      processing.data.JSONObject jsonSubNode = json.getJSONObject("probability");
+      String name = json.getString("label");
+      negVal = jsonSubNode.getFloat("neg");
+      posVal = jsonSubNode.getFloat("pos");
+      theSent = name.toString();
+      if(theSent.equals("neg")){
+        tColor = color(255,0,0,217);
+        TheConfig.numNeg +=1;
+      }
+      if(theSent.equals("pos")){
+        tColor = color(0,255,0,217);
+        TheConfig.numPos +=1;
+      }
+      if(theSent.equals("neutral")){
+        /// calculate a third color based on the mix of pos and neg
+        tColor = color(map(negVal,0,1,0,255), map(posVal,0,1,0,255), random(0,255), 217);
+      }
+      /// println(name);
+      
+    } catch (Exception e){
+      println("can't parse json: " + e);
+      
+    }
+   */
+    
   }
   
  

@@ -18,7 +18,6 @@ String AccessTokenSecret = "PzMgShSUXjEmGeYojvEq0087iJQpuYN5PAXtPhk91Es4w";
 String thePath = "http://api.twitter.com/1/users/show.json?user_id=";
 
 //// TWITTER OBJECTS ///////
-String searchStr = "trump";
 int curTweetId = 0;
 Twitter twitter;
 List<Status> tweets;
@@ -69,12 +68,12 @@ void setup() {
   size(800, 800, P2D);
   /// frameRate(60);
 
-  /// set the width and height in the singleton
-  /// so we can reference it from the objects 
-  /// rather than pass it in
+  /// set config data  in the singleton
   TheConfig = AnimConfig.getInstance();
   TheConfig.tWidth = width;
   TheConfig.tHeight = height;
+
+  updateSearchId(1);
 
 
   //// init twitter
@@ -90,7 +89,7 @@ void setup() {
 
   getNewTweets();
 
-  dtHairball = loadImage("data/hairballs_trump_pure.png");
+  dtHairball = loadImage(TheConfig.imgPath);
   /// set up tweet recheck
   /// thread("refreshTweets");
 }
@@ -321,6 +320,44 @@ void deleteCircle() {
 }
 
 
+//////////////////////////////////
+/////// update candidate name ////
+////////////////////////////////////
+void updateSearchId(int tId){
+  
+  if (tId == 0){
+    TheConfig.searchTerm = "trump";
+    TheConfig.searchId = tId;
+    TheConfig.imgPath = "data/hairballs_trump_pure.png";
+  } 
+  if (tId == 1){
+    TheConfig.searchTerm = "berniesanders";
+    TheConfig.searchId = tId;
+    TheConfig.imgPath = "data/haiballs_bernie_pure.png";
+    
+  }
+  
+  if (tId == 2){
+     TheConfig.searchTerm = "hillary";
+    TheConfig.searchId = tId;
+    TheConfig.imgPath = "data/hairballs_hillary_pure.png";
+    
+  }
+  
+}
+
+
+////////////////////////////////////
+//////// draw fake light bulbs ////
+///////////////////////////////////
+
+void drawFakeLightBulbs(){
+  
+  
+  
+  
+}
+
 ///////////////////////////////////
 ///// TWITTER HANDLING ///////////
 ////////////////////////////////////
@@ -328,7 +365,7 @@ void getNewTweets() {
 
 
   try {
-    String searchString = searchStr;
+    String searchString = TheConfig.searchTerm;
     // try to get tweets here
     Query query = new Query(searchString);
     QueryResult result = twitter.search(query);
