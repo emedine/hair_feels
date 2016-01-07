@@ -46,11 +46,14 @@ float pulseSpeed = 0; //// smaller number == faster pulse
 
 /// TIMING FUNCTIONS
 int refreshDelay = 25000;
-float time;
-float wait = 35000;
+float time; /// wait in between tweets
+float wait = 75000;
 
+float pulseTime;
+float pulseWait = 1000;
+float pulseIncrement = 7.5; //// 3.1415;
 boolean tick = false;
-
+boolean pulsetick = false;
 /// Main Config
 AnimConfig TheConfig;
 int tWidth;
@@ -64,7 +67,7 @@ boolean isPos = false; /// baseline sentiment for current pool of tweets
 
 void setup() {
   size(800, 800, P2D);
-  frameRate(60);
+  /// frameRate(60);
 
   /// set the width and height in the singleton
   /// so we can reference it from the objects 
@@ -94,16 +97,23 @@ void setup() {
 
 
 void draw() {
-  //// check tweets, save to an array
+  //// check for new tweets, save to an array
   if(millis() - time >= wait){
     getNewTweets();
     tick = !tick;//if it is, do something
     time = millis();//also update the stored time
   }
-  //// check background color
-  checkBGColor();
-  background(curColor);
   
+  //// check to see if it's time for a new pulse
+  if(millis() - pulseTime >= pulseWait){
+    resetPulse();
+    pulsetick = !pulsetick;//if it is, do something
+    pulseTime = millis();//also update the stored time
+  }
+  //// check background color
+  
+  background(curColor);
+  checkBGColor();
   
   try {
     if (curTweetId >= tweets.size()) {
@@ -118,29 +128,16 @@ void draw() {
   catch (Exception e) {
     println("error incrementing tweets: " + e);
   }
-  
   // filter(BLUR, 6);
-  
-  /// pulse in box blocker
+  /// draw the "pulse" color
+  /// and check its alpha
   fill(baseColor, pulseAlpha);
   rect(0, 0, width, height);
-  float rtAdj =  map(pulseSpeed, 0,15,117,0); 
-  if(pulseIn == true && pulseAlpha < 255){
-    pulseAlpha += rtAdj; 
-    
-  } 
-  if(pulseIn == true && pulseAlpha >= 255){
-    pulseIn = false;
+   if(pulseAlpha > 0){ /// make alpha fade out really low so we can see the color longer
+    pulseAlpha -= pulseIncrement; 
     
   }
-  if(pulseIn == false && pulseAlpha > -575){ /// make alpha fade out really low so we can see the color longer
-    pulseAlpha -= rtAdj; 
-    
-  }
-  if(pulseIn == false && pulseAlpha <= -575){
-    pulseIn = true;
-    
-  }
+  
   //// println("Pulse fade: " + pulseAlpha + " pulse speed " + pulseSpeed + " rtAdj: " + rtAdj);
   //// println(frameRate);
   curTweetId = curTweetId + 1;
@@ -148,7 +145,7 @@ void draw() {
   /// draw image
   imageMode(CORNERS);
   image(dtHairball, 0,0, width,height);
-
+  /// tint(255,135);
 
   //// delay(250);
   /// show last in array
@@ -158,11 +155,19 @@ void draw() {
   /// send to google storage
 }
 
-void checkBGColor(){
+void resetPulse(){
+ /// reset the "pulse" color depending
+ /// on how many tweets there are
+ println("reset pulse");
+ pulseAlpha = 255;
   
-  /// get our high and low colors
-  /// from our neg and pos ratio
+}
 
+/// change background negative/positive colors
+/// if the overall sentiment is positive
+/// background is green
+/// if negative, is red
+void checkBGColor(){
   if(TheConfig.numPos >= TheConfig.numNeg){
     isPos = true;
     /// normalize to green
@@ -225,14 +230,14 @@ void buildTweetCircs() {
   //// there's always 15 so let's fudge that
   // numRows = int(sqrt(tweets.size()));
   // numCols = int(sqrt(tweets.size()));
-  numRows = int(tweets.size()/3.5);
-  numCols = int(tweets.size()/3.5);
-  float side = (TheConfig.tWidth * TheConfig.tHeight)/tweets.size();
+  numRows = 4; //  int(tweets.size()/3.5);
+  numCols = 4;// int(tweets.size()/3.5);
+  float side = TheConfig.tWidth/numRows; /// (TheConfig.tWidth * TheConfig.tHeight)/tweets.size();
 
   /// int numRows = int(TheConfig.tWidth/tightRad);
   ///  int numCols = int(TheConfig.tHeight/tightRad);
-  float circWidth = TheConfig.tWidth/numCols;
-  float circHeight = TheConfig.tHeight/numRows;
+  float circWidth = side; //TheConfig.tWidth/numCols;
+  float circHeight = side; //TheConfig.tHeight/numRows;
  
   /// println("width: " + circWidth + " " + circHeight);
   int tCount = 0;
@@ -258,20 +263,23 @@ void buildTweetCircs() {
         /// println(status.getText());
         /// we change this once we get the sentiment anyway
         tCirc.tColor = color(random(255), random(255), random(255), 135);
-        //// tCirc.getSentiment();
+        /// GET THE SENTIMENT FOR EACH CIRCLE/TWEET
+        tCirc.getSentiment();
         PixelArray.add(tCirc);
         tCount+=1;
       }
     }
   }
-  /// get our pulse rate from
-  /// our retweet ratio
-  pulseSpeed = TheConfig.numTweets - TheConfig.numRTs; //// smaller number == faster pulse
   println("NUMBER TWEETS : " + TheConfig.numTweets);
   println("RETWEETS: " + TheConfig.numRTs);
-  println("IS POSITIVE: " +  isPos + " pos: " + TheConfig.numPos + " neg: " + TheConfig.numNeg);
-  
+  println("POSITIVE: " +  isPos + " pos: " + TheConfig.numPos + " neg: " + TheConfig.numNeg);
   println("PULSE SPEED: " +  pulseSpeed + " twts: " +  TheConfig.numTweets + " rts: " + TheConfig.numRTs);
+  
+    /// get our pulse rate from
+  /// our retweet ratio pulseWait
+  /// reset the bulse timer
+  pulseWait = map(TheConfig.numRTs,0, 15, 33000, 100); //// smaller RT == faster pulse
+  pulseTime = millis();//also update the stored time
 }
 
 /////////////////////////////////////////
