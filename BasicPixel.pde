@@ -100,7 +100,9 @@ class BasicPixel {
           }
           if(theSent.equals("neutral")){
             /// calculate a third color based on the mix of pos and neg
-            tColor = color(map(negVal,0,1,0,255), map(posVal,0,1,0,255), random(0,255), 217);
+            float newClr = random(0, 360);
+            /// boxColor = color(HSL2RGB(nnewClr);
+            tColor = color(HSL2RGB(newClr, 1, .5)); ////color(map(negVal,0,1,0,255), map(posVal,0,1,0,255), random(0,255), 217);
           }
           /// println(name);
           
@@ -159,8 +161,10 @@ class BasicPixel {
         TheConfig.numPos +=1;
       }
       if(theSent.equals("neutral")){
-        /// calculate a third color based on the mix of pos and neg
-        tColor = color(map(negVal,0,1,0,255), map(posVal,0,1,0,255), random(0,255), 217);
+        /// calculate a third color based on the mix of pos and neg, use HSB because it's prettier
+        float newClr = random(0, 360);
+        /// boxColor = color(HSL2RGB(nnewClr);
+        tColor = color(HSL2RGB(newClr); ////color(map(negVal,0,1,0,255), map(posVal,0,1,0,255), random(0,255), 217);
       }
       /// println(name);
       
@@ -174,11 +178,11 @@ class BasicPixel {
   
  
   void update() {
-
+    /*
     noStroke();
     fill(tColor);
     ellipse(tPos.x, tPos.y, tSizeW, tSizeH);
-    
+    */
     //// display text
     fill(0);
     text(theSent, tPos.x, tPos.y, 200, 200);
